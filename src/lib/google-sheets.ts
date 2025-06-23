@@ -1,27 +1,27 @@
 import {google} from 'googleapis';
 import type {BookEntry} from '@/lib/types';
 
-const SHEET_ID = process.env.GOOGLE_SHEET_ID;
-const SERVICE_ACCOUNT_EMAIL = process.env.GCP_SERVICE_ACCOUNT_EMAIL;
-const PRIVATE_KEY = process.env.GCP_PRIVATE_KEY?.replace(/\\n/g, '\n');
-
-const auth = new google.auth.GoogleAuth({
-  credentials: {
-    client_email: SERVICE_ACCOUNT_EMAIL,
-    private_key: PRIVATE_KEY,
-  },
-  scopes: ['https://www.googleapis.com/auth/spreadsheets'],
-});
-
-const sheets = google.sheets({version: 'v4', auth});
-
 export async function appendToSheet(book: BookEntry) {
+  const SHEET_ID = process.env.GOOGLE_SHEET_ID;
+  const SERVICE_ACCOUNT_EMAIL = process.env.GCP_SERVICE_ACCOUNT_EMAIL;
+  const PRIVATE_KEY = process.env.GCP_PRIVATE_KEY?.replace(/\\n/g, '\n');
+  
   if (!SHEET_ID || !SERVICE_ACCOUNT_EMAIL || !PRIVATE_KEY) {
     console.warn('Google Sheets credentials are not set in .env. Skipping sheet append.');
     return;
   }
 
   try {
+    const auth = new google.auth.GoogleAuth({
+      credentials: {
+        client_email: SERVICE_ACCOUNT_EMAIL,
+        private_key: PRIVATE_KEY,
+      },
+      scopes: ['https://www.googleapis.com/auth/spreadsheets'],
+    });
+
+    const sheets = google.sheets({version: 'v4', auth});
+
     const values = [
         [
             book.timestamp,
