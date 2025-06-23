@@ -1,6 +1,7 @@
 'use client';
 
-import { useFormState, useFormStatus } from 'react-dom';
+import { useFormStatus } from 'react-dom';
+import { useActionState } from 'react';
 import { getRecommendationAction } from '@/lib/actions';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -25,7 +26,7 @@ function SubmitButton() {
 }
 
 export default function Recommendations() {
-  const [state, formAction] = useFormState(getRecommendationAction, initialState);
+  const [state, formAction] = useActionState(getRecommendationAction, initialState);
 
   return (
     <div>

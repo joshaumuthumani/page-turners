@@ -53,8 +53,7 @@ export default function BookSearch({ childName }: BookSearchProps) {
     setResults(books);
     setIsLoading(false);
   };
-  
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+
   const debouncedSearch = useCallback(debounce(handleSearch, 400), []);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -76,10 +75,25 @@ export default function BookSearch({ childName }: BookSearchProps) {
         bookTitle: selectedBook.volumeInfo.title,
         author: selectedBook.volumeInfo.authors?.join(', ') || 'Unknown Author',
         pages: selectedBook.volumeInfo.pageCount || 0,
-        coverImage: selectedBook.volumeInfo.imageLinks?.thumbnail?.replace('http://', 'https://') || 'https://placehold.co/128x192.png',
+        coverImage:
+          selectedBook.volumeInfo.imageLinks?.thumbnail?.replace('http://', 'https://') ||
+          'https://placehold.co/128x192.png',
+        dateRead: new Date().toISOString().split('T')[0],
       };
-      
+
+      // Call internal backend (e.g., Firebase)
       const result = await logBook(bookData);
+
+      // Call Google Sheets API
+      try {
+        await fetch('/api/submit', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(bookData),
+        });
+      } catch (err) {
+        console.error('Google Sheets submission failed:', err);
+      }
 
       if (result.success) {
         toast({
@@ -93,12 +107,13 @@ export default function BookSearch({ childName }: BookSearchProps) {
           variant: 'destructive',
         });
       }
+
       setSelectedBook(null);
       setQuery('');
       setResults([]);
     });
   };
-  
+
   useEffect(() => {
     if (!query) {
       setResults([]);
@@ -118,7 +133,7 @@ export default function BookSearch({ childName }: BookSearchProps) {
         />
         {isLoading && <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 animate-spin" />}
       </div>
-      
+
       {results.length > 0 && (
         <Card className="mt-4 max-h-72 overflow-y-auto">
           <CardContent className="p-2">
@@ -130,7 +145,10 @@ export default function BookSearch({ childName }: BookSearchProps) {
                     className="w-full text-left p-2 rounded-md hover:bg-muted flex items-start gap-4"
                   >
                     <Image
-                      src={book.volumeInfo.imageLinks?.thumbnail?.replace('http://', 'https://') || 'https://placehold.co/128x192.png'}
+                      src={
+                        book.volumeInfo.imageLinks?.thumbnail?.replace('http://', 'https://') ||
+                        'https://placehold.co/128x192.png'
+                      }
                       alt={book.volumeInfo.title}
                       width={50}
                       height={75}
@@ -139,12 +157,8 @@ export default function BookSearch({ childName }: BookSearchProps) {
                     />
                     <div>
                       <p className="font-semibold leading-tight">{book.volumeInfo.title}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {book.volumeInfo.authors?.join(', ')}
-                      </p>
-                       <p className="text-sm text-muted-foreground">
-                        {book.volumeInfo.pageCount || 'N/A'} pages
-                      </p>
+                      <p className="text-sm text-muted-foreground">{book.volumeInfo.authors?.join(', ')}</p>
+                      <p className="text-sm text-muted-foreground">{book.volumeInfo.pageCount || 'N/A'} pages</p>
                     </div>
                   </button>
                 </li>
@@ -164,19 +178,22 @@ export default function BookSearch({ childName }: BookSearchProps) {
               </AlertDialogDescription>
             </AlertDialogHeader>
             <div className="flex gap-4 my-4">
-                <Image
-                    src={selectedBook.volumeInfo.imageLinks?.thumbnail?.replace('http://', 'https://') || 'https://placehold.co/128x192.png'}
-                    alt={selectedBook.volumeInfo.title}
-                    width={80}
-                    height={120}
-                    className="rounded-md shadow-md"
-                    data-ai-hint="book cover"
-                />
-                <div>
-                    <h3 className="font-bold">{selectedBook.volumeInfo.title}</h3>
-                    <p className="text-sm text-muted-foreground">{selectedBook.volumeInfo.authors?.join(', ')}</p>
-                    <p className="text-sm text-muted-foreground">{selectedBook.volumeInfo.pageCount || 0} pages</p>
-                </div>
+              <Image
+                src={
+                  selectedBook.volumeInfo.imageLinks?.thumbnail?.replace('http://', 'https://') ||
+                  'https://placehold.co/128x192.png'
+                }
+                alt={selectedBook.volumeInfo.title}
+                width={80}
+                height={120}
+                className="rounded-md shadow-md"
+                data-ai-hint="book cover"
+              />
+              <div>
+                <h3 className="font-bold">{selectedBook.volumeInfo.title}</h3>
+                <p className="text-sm text-muted-foreground">{selectedBook.volumeInfo.authors?.join(', ')}</p>
+                <p className="text-sm text-muted-foreground">{selectedBook.volumeInfo.pageCount || 0} pages</p>
+              </div>
             </div>
             <AlertDialogFooter>
               <AlertDialogCancel disabled={isSubmitting}>Cancel</AlertDialogCancel>

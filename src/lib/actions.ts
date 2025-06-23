@@ -1,19 +1,17 @@
 'use server';
 
-import { addBook } from '@/lib/mock-api';
+import { addBook } from '@/lib/add-book'; // <-- updated from mock-api to firestore
 import { revalidatePath } from 'next/cache';
 import type { BookEntry, GoogleBook } from '@/lib/types';
 import { getSentimentBasedRecommendations } from '@/ai/flows/sentiment-analysis-recommendations';
 
-// IMPORTANT: Add your Google Books API key to a .env.local file
-// GOOGLE_BOOKS_API_KEY=your_api_key_here
 const GOOGLE_BOOKS_API_KEY = process.env.GOOGLE_BOOKS_API_KEY;
 
 export async function searchBooks(query: string): Promise<GoogleBook[]> {
   if (!query) return [];
-  if(!GOOGLE_BOOKS_API_KEY) {
-      console.warn("Google Books API key is not set in .env.local. Search will not work.");
-      return [];
+  if (!GOOGLE_BOOKS_API_KEY) {
+    console.warn("Google Books API key is not set in .env.local. Search will not work.");
+    return [];
   }
 
   const url = `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(query)}&key=${GOOGLE_BOOKS_API_KEY}&maxResults=5`;
@@ -34,7 +32,7 @@ export async function searchBooks(query: string): Promise<GoogleBook[]> {
 
 export async function logBook(bookData: Omit<BookEntry, 'id' | 'timestamp'>) {
   try {
-    const newBook = await addBook(bookData);
+    const newBook = await addBook(bookData); // <-- Now writes to Firestore
     revalidatePath('/leaderboard');
     revalidatePath(`/${bookData.childName.toLowerCase()}`);
     return { success: true, book: newBook };
