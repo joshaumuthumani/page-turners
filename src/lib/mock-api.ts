@@ -1,4 +1,5 @@
 import type { BookEntry, LeaderboardEntry } from '@/lib/types';
+import { appendToSheet } from '@/lib/google-sheets';
 
 // In-memory store to simulate the database
 let mockBookEntries: BookEntry[] = [
@@ -40,6 +41,8 @@ export async function addBook(book: Omit<BookEntry, 'id' | 'timestamp'>): Promis
         timestamp: new Date().toISOString(),
     };
     mockBookEntries.push(newEntry);
+    
+    await appendToSheet(newEntry);
     
     return newEntry;
 }
