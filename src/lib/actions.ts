@@ -58,3 +58,20 @@ export async function getRecommendationAction(prevState: any, formData: FormData
     return { recommendation: '', error: 'Failed to get recommendations. Please try again.' };
   }
 }
+
+export async function fetchBookMetadata(query: string): Promise<GoogleBook | null> {
+  const encoded = encodeURIComponent(query);
+  const url = `https://www.googleapis.com/books/v1/volumes?q=${encoded}&printType=books&projection=lite&maxResults=1`;
+
+  try {
+    const res = await fetch(url);
+    const json = await res.json();
+
+    if (json.totalItems === 0 || !json.items?.length) return null;
+
+    return json.items[0] as GoogleBook;
+  } catch (err) {
+    console.error('Error fetching fallback metadata:', err);
+    return null;
+  }
+}

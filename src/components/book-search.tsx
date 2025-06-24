@@ -3,7 +3,7 @@
 import { useState, useTransition, useCallback, useEffect } from 'react';
 import Image from 'next/image';
 import { useToast } from '@/hooks/use-toast';
-import { logBook, searchBooks } from '@/lib/actions';
+import { logBook, searchBooks, fetchBookMetadata } from '@/lib/actions';
 import type { GoogleBook } from '@/lib/types';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -50,7 +50,14 @@ export default function BookSearch({ childName }: BookSearchProps) {
     }
     setIsLoading(true);
     const books = await searchBooks(searchQuery);
-    setResults(books);
+
+    if (books.length === 0) {
+      const fallbackBook = await fetchBookMetadata(searchQuery);
+      setResults(fallbackBook ? [fallbackBook] : []);
+    } else {
+      setResults(books);
+    }
+
     setIsLoading(false);
   };
 
@@ -81,10 +88,8 @@ export default function BookSearch({ childName }: BookSearchProps) {
         dateRead: new Date().toISOString().split('T')[0],
       };
 
-      // Call internal backend (e.g., Firebase)
       const result = await logBook(bookData);
 
-      // Call Google Sheets API
       try {
         await fetch('/api/submit', {
           method: 'POST',
