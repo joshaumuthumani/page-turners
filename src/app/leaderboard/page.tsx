@@ -25,9 +25,14 @@ export default async function LeaderboardPage() {
   const [ellieData, jasonData] = leaderboardData;
 
   const getWinner = () => {
+    if (ellieData.totalBooks > jasonData.totalBooks) return ellieData.childName;
+    if (jasonData.totalBooks > ellieData.totalBooks) return jasonData.childName;
+  
+    // Tie on books — break by total pages
     if (ellieData.totalPages > jasonData.totalPages) return ellieData.childName;
     if (jasonData.totalPages > ellieData.totalPages) return jasonData.childName;
-    if (ellieData.totalPages === 0 && jasonData.totalPages === 0) return 'Not enough data yet';
+  
+    if (ellieData.totalBooks === 0 && jasonData.totalBooks === 0) return 'Not enough data yet';
     return "It's a tie!";
   };
 
