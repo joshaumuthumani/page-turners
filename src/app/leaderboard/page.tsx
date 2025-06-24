@@ -1,10 +1,12 @@
 import { getLeaderboardData } from '@/lib/get-leaderboard';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Trophy, Book, BookCopy } from 'lucide-react';
+import { Trophy, BookCopy } from 'lucide-react';
 import LeaderboardChart from '@/components/leaderboard-chart';
 import { Progress } from '@/components/ui/progress';
 
 export const dynamic = 'force-dynamic';
+
+const BOOK_GOAL = 20;
 
 export default async function LeaderboardPage() {
   const leaderboardData = await getLeaderboardData();
@@ -20,18 +22,12 @@ export default async function LeaderboardPage() {
 
   const [ellieData, jasonData] = leaderboardData;
 
-  let winner: string;
-  if (ellieData.totalPages > jasonData.totalPages) {
-    winner = ellieData.childName;
-  } else if (jasonData.totalPages > ellieData.totalPages) {
-    winner = jasonData.childName;
-  } else if (ellieData.totalPages === 0 && jasonData.totalPages === 0) {
-    winner = 'Not enough data yet';
-  } else {
-    winner = "It's a tie!";
-  }
-
-  const goalPages = 1000;
+  const getWinner = () => {
+    if (ellieData.totalPages > jasonData.totalPages) return ellieData.childName;
+    if (jasonData.totalPages > ellieData.totalPages) return jasonData.childName;
+    if (ellieData.totalPages === 0 && jasonData.totalPages === 0) return 'Not enough data yet';
+    return "It's a tie!";
+  };
 
   return (
     <div className="container mx-auto py-8 px-4">
@@ -44,7 +40,7 @@ export default async function LeaderboardPage() {
         <CardHeader className="text-center">
           <CardTitle className="font-headline text-3xl flex items-center justify-center gap-2">
             <Trophy className="w-8 h-8 text-accent" />
-            <span>Current Leader: {winner}</span>
+            <span>Current Leader: {getWinner()}</span>
           </CardTitle>
         </CardHeader>
       </Card>
@@ -59,17 +55,17 @@ export default async function LeaderboardPage() {
             <CardContent className="space-y-4 text-lg">
               <div className="flex items-center gap-4">
                 <BookCopy className="w-6 h-6 text-primary" />
-                <span><strong>Total Books:</strong> {data.totalBooks}</span>
+                <span><strong>Books Read:</strong> {data.totalBooks}</span>
               </div>
+
+              <Progress value={(data.totalBooks / BOOK_GOAL) * 100} />
+              <p className="text-muted-foreground text-sm">
+                {data.totalBooks} / {BOOK_GOAL} books
+              </p>
+
               <div className="flex items-center gap-4">
-                <Book className="w-6 h-6 text-primary" />
+                <BookCopy className="w-6 h-6 text-primary" />
                 <span><strong>Total Pages:</strong> {data.totalPages.toLocaleString()}</span>
-              </div>
-              <div className="pt-2">
-                <Progress value={(data.totalPages / goalPages) * 100} />
-                <p className="text-sm text-muted-foreground mt-1">
-                  {data.totalPages} / {goalPages} pages
-                </p>
               </div>
             </CardContent>
           </Card>
@@ -81,7 +77,7 @@ export default async function LeaderboardPage() {
           <CardTitle className="font-headline text-2xl">Pages Read Comparison</CardTitle>
         </CardHeader>
         <CardContent>
-          <LeaderboardChart data={leaderboardData} />
+          <LeaderboardChart data={leaderboardData} mode="pages" />
         </CardContent>
       </Card>
     </div>
