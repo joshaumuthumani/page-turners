@@ -43,21 +43,51 @@ export default function BookSearch({ childName }: BookSearchProps) {
   const [isSubmitting, startTransition] = useTransition();
   const { toast } = useToast();
 
+  const isValidBook = (book: GoogleBook) => {
+    const info = book.volumeInfo;
+    return (
+      book.id &&
+      info?.title &&
+      info.authors &&
+      info.pageCount &&
+      info.imageLinks?.thumbnail
+    );
+  };
+  
+  const extractVolumeId = (url: string): string | null => {
+    const match = url.match(/books\/edition\/[^/]+\/([^?&/]+)/);
+    return match ? match[1] : null;
+  };
+  
   const handleSearch = async (searchQuery: string) => {
     if (searchQuery.length < 3) {
       setResults([]);
       return;
     }
+  
     setIsLoading(true);
-    const books = await searchBooks(searchQuery);
-
-    if (books.length === 0) {
-      const fallbackBook = await fetchBookMetadata(searchQuery);
-      setResults(fallbackBook ? [fallbackBook] : []);
-    } else {
-      setResults(books);
+  
+    const volumeId = extractVolumeId(searchQuery);
+    if (volumeId) {
+      const byId = await fetchBookMetadata(volumeId);
+      if (byId) {
+        setResults([byId]);
+        setIsLoading(false);
+        return;
+      }
     }
-
+  
+    let books = await searchBooks(searchQuery);
+    let filtered = books.filter(isValidBook);
+  
+    if (filtered.length === 0) {
+      const fallbackBook = await fetchBookMetadata(searchQuery);
+      if (fallbackBook && isValidBook(fallbackBook)) {
+        filtered = [fallbackBook];
+      }
+    }
+  
+    setResults(filtered);
     setIsLoading(false);
   };
 

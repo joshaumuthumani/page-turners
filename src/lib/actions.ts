@@ -59,19 +59,22 @@ export async function getRecommendationAction(prevState: any, formData: FormData
   }
 }
 
-export async function fetchBookMetadata(query: string): Promise<GoogleBook | null> {
-  const encoded = encodeURIComponent(query);
-  const url = `https://www.googleapis.com/books/v1/volumes?q=${encoded}&printType=books&projection=lite&maxResults=1`;
+export async function fetchBookMetadata(queryOrId: string): Promise<GoogleBook | null> {
+  const isVolumeId = /^[a-zA-Z0-9_-]{10,}$/; // crude check for Google volume ID format
+  const url = isVolumeId.test(queryOrId)
+    ? `https://www.googleapis.com/books/v1/volumes/${queryOrId}`
+    : `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(queryOrId)}&printType=books&projection=lite&maxResults=1`;
 
   try {
     const res = await fetch(url);
     const json = await res.json();
 
-    if (json.totalItems === 0 || !json.items?.length) return null;
+    if ('volumeInfo' in json) return json as GoogleBook; // volume by ID
+    if (json.totalItems > 0) return json.items[0] as GoogleBook; // fallback
 
-    return json.items[0] as GoogleBook;
+    return null;
   } catch (err) {
-    console.error('Error fetching fallback metadata:', err);
+    console.error('Error fetching metadata:', err);
     return null;
   }
 }
