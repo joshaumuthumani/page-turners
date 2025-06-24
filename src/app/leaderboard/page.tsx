@@ -20,13 +20,17 @@ export default async function LeaderboardPage() {
 
   const [ellieData, jasonData] = leaderboardData;
 
-  const winner =
-    ellieData.totalPages > jasonData.totalPages
-      ? ellieData.childName
-      : jasonData.totalPages > ellieData.totalPages
-      ? jasonData.childName
-      : "It's a tie!";
+  let winner: string;
 
+if (ellieData.totalPages > jasonData.totalPages) {
+  winner = ellieData.childName;
+} else if (jasonData.totalPages > ellieData.totalPages) {
+  winner = jasonData.childName;
+} else if (ellieData.totalPages === 0 && jasonData.totalPages === 0) {
+  winner = 'Not enough data yet';
+} else {
+  winner = "It's a tie!";
+}
   return (
     <div className="container mx-auto py-8 px-4">
       <div className="text-center mb-8">

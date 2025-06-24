@@ -17,7 +17,8 @@ export async function getLeaderboardData(): Promise<LeaderboardEntry[]> {
     if (!data[childName]) {
       data[childName] = { totalPages: 0, totalBooks: 0 };
     }
-    data[childName].totalPages += pageCount;
+    data[childName].totalPages += typeof pageCount === 'number' ? pageCount : 0;
+    console.log('doc data', doc.data());
     data[childName].totalBooks += 1;
   });
 
