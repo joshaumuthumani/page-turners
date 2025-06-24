@@ -1,4 +1,4 @@
-import { getLeaderboardData } from '@/lib/mock-api';
+import { getLeaderboardData } from '@/lib/get-leaderboard';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Trophy, Book, BookCopy } from 'lucide-react';
 import LeaderboardChart from '@/components/leaderboard-chart';
