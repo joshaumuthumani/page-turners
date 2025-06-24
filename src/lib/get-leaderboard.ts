@@ -13,7 +13,7 @@ export async function getLeaderboardData(): Promise<LeaderboardEntry[]> {
   const data: Record<string, { totalPages: number; totalBooks: number }> = {};
 
   snapshot.forEach((doc) => {
-    const { childName, pageCount } = doc.data();
+    const { childName, pages: pageCount } = doc.data();
     if (!data[childName]) {
       data[childName] = { totalPages: 0, totalBooks: 0 };
     }
