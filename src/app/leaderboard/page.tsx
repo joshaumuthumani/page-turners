@@ -1,12 +1,13 @@
 import { getLeaderboardData } from '@/lib/get-leaderboard';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Trophy, BookCopy } from 'lucide-react';
+import { Trophy, BookCopy, Book, Sparkles } from 'lucide-react';
 import LeaderboardChart from '@/components/leaderboard-chart';
 import { Progress } from '@/components/ui/progress';
 
 export const dynamic = 'force-dynamic';
 
 const BOOK_GOAL = 20;
+const TROPHY_MILESTONE = 10;
 
 export default async function LeaderboardPage() {
   const leaderboardData = await getLeaderboardData();
@@ -46,30 +47,46 @@ export default async function LeaderboardPage() {
       </Card>
 
       <div className="grid md:grid-cols-2 gap-8 mb-8">
-        {[ellieData, jasonData].map((data) => (
-          <Card key={data.childName} className="transform hover:-translate-y-1 transition-transform">
-            <CardHeader>
-              <CardTitle className="font-headline text-3xl">{data.childName}</CardTitle>
-              <CardDescription>{data.childName}'s current stats</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4 text-lg">
-              <div className="flex items-center gap-4">
-                <BookCopy className="w-6 h-6 text-primary" />
-                <span><strong>Books Read:</strong> {data.totalBooks}</span>
-              </div>
+        {[ellieData, jasonData].map((data) => {
+          const progress = (data.totalBooks / BOOK_GOAL) * 100;
+          const hasTrophy = data.totalBooks >= TROPHY_MILESTONE;
+          const hasCompleted = data.totalBooks >= BOOK_GOAL;
 
-              <Progress value={(data.totalBooks / BOOK_GOAL) * 100} />
-              <p className="text-muted-foreground text-sm">
-                {data.totalBooks} / {BOOK_GOAL} books
-              </p>
+          return (
+            <Card key={data.childName} className="transform hover:-translate-y-1 transition-transform">
+              <CardHeader>
+                <CardTitle className="font-headline text-3xl">{data.childName}</CardTitle>
+                <CardDescription>{data.childName}'s current stats</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4 text-lg">
+                <div className="flex items-center gap-4">
+                  <BookCopy className="w-6 h-6 text-primary" />
+                  <span><strong>Books Read:</strong> {data.totalBooks}</span>
+                </div>
 
-              <div className="flex items-center gap-4">
-                <BookCopy className="w-6 h-6 text-primary" />
-                <span><strong>Total Pages:</strong> {data.totalPages.toLocaleString()}</span>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+                <Progress value={progress} className="h-4 rounded-full bg-muted" />
+                <div className="flex justify-between text-sm text-muted-foreground px-1">
+                  <span>{data.totalBooks} / {BOOK_GOAL} books</span>
+                  <div className="flex items-center gap-4">
+                    <span className="flex items-center gap-1">
+                      <Trophy className="h-4 w-4 text-yellow-500" />
+                      {TROPHY_MILESTONE}
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <Sparkles className="h-4 w-4 text-yellow-400" />
+                      {BOOK_GOAL}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-4">
+                  <Book className="w-6 h-6 text-primary" />
+                  <span><strong>Total Pages:</strong> {data.totalPages.toLocaleString()}</span>
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })}
       </div>
 
       <Card>
