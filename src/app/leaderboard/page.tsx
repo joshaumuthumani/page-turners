@@ -2,13 +2,13 @@ import { getLeaderboardData } from '@/lib/get-leaderboard';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Trophy, Book, BookCopy } from 'lucide-react';
 import LeaderboardChart from '@/components/leaderboard-chart';
+import { Progress } from '@/components/ui/progress';
 
 export const dynamic = 'force-dynamic';
 
 export default async function LeaderboardPage() {
   const leaderboardData = await getLeaderboardData();
 
-  // Handle missing or malformed data
   if (!leaderboardData || leaderboardData.length < 2) {
     return (
       <div className="container mx-auto py-8 px-4 text-center">
@@ -21,16 +21,18 @@ export default async function LeaderboardPage() {
   const [ellieData, jasonData] = leaderboardData;
 
   let winner: string;
+  if (ellieData.totalPages > jasonData.totalPages) {
+    winner = ellieData.childName;
+  } else if (jasonData.totalPages > ellieData.totalPages) {
+    winner = jasonData.childName;
+  } else if (ellieData.totalPages === 0 && jasonData.totalPages === 0) {
+    winner = 'Not enough data yet';
+  } else {
+    winner = "It's a tie!";
+  }
 
-if (ellieData.totalPages > jasonData.totalPages) {
-  winner = ellieData.childName;
-} else if (jasonData.totalPages > ellieData.totalPages) {
-  winner = jasonData.childName;
-} else if (ellieData.totalPages === 0 && jasonData.totalPages === 0) {
-  winner = 'Not enough data yet';
-} else {
-  winner = "It's a tie!";
-}
+  const goalPages = 1000;
+
   return (
     <div className="container mx-auto py-8 px-4">
       <div className="text-center mb-8">
@@ -62,6 +64,12 @@ if (ellieData.totalPages > jasonData.totalPages) {
               <div className="flex items-center gap-4">
                 <Book className="w-6 h-6 text-primary" />
                 <span><strong>Total Pages:</strong> {data.totalPages.toLocaleString()}</span>
+              </div>
+              <div className="pt-2">
+                <Progress value={(data.totalPages / goalPages) * 100} />
+                <p className="text-sm text-muted-foreground mt-1">
+                  {data.totalPages} / {goalPages} pages
+                </p>
               </div>
             </CardContent>
           </Card>
