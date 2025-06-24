@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation';
-import { getBooksForChild } from '@/lib/mock-api';
+import { getBooksForChild } from '@/lib/get-books';
 import GoalTracker from '@/components/goal-tracker';
 import BookSearch from '@/components/book-search';
 import Recommendations from '@/components/recommendations';

@@ -1,6 +1,6 @@
 'use server';
 
-import { addBook } from '@/lib/add-book'; // <-- updated from mock-api to firestore
+import { addBook } from '@/lib/add-book';
 import { revalidatePath } from 'next/cache';
 import type { BookEntry, GoogleBook } from '@/lib/types';
 import { getSentimentBasedRecommendations } from '@/ai/flows/sentiment-analysis-recommendations';
