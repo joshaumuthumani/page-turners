@@ -2,36 +2,30 @@ import { db } from './firebase';
 import { collection, getDocs } from 'firebase/firestore';
 
 type LeaderboardEntry = {
-    childName: 'Ellie' | 'Jason';
-    totalBooks: number;
-    totalPages: number;
-  };
+  childName: 'Ellie' | 'Jason';
+  totalBooks: number;
+  totalPages: number;
+};
 
 export async function getLeaderboardData(): Promise<LeaderboardEntry[]> {
-  const booksSnapshot = await getDocs(collection(db, 'books'));
+  const snapshot = await getDocs(collection(db, 'books'));
 
-  const summary: Record<string, { totalBooks: number; totalPages: number }> = {};
+  const data: Record<string, { totalPages: number; totalBooks: number }> = {};
 
-  booksSnapshot.forEach((doc) => {
-    const { childName, pages } = doc.data();
-
-    if (!childName) return;
-
-    if (!summary[childName]) {
-      summary[childName] = { totalBooks: 0, totalPages: 0 };
+  snapshot.forEach((doc) => {
+    const { childName, pageCount } = doc.data();
+    if (!data[childName]) {
+      data[childName] = { totalPages: 0, totalBooks: 0 };
     }
-
-    summary[childName].totalBooks += 1;
-    summary[childName].totalPages += pages || 0;
+    data[childName].totalPages += pageCount;
+    data[childName].totalBooks += 1;
   });
 
-  const leaderboard: LeaderboardEntry[] = Object.entries(summary)
-    .map(([childName, stats]) => ({
-        childName: childName as 'Ellie' | 'Jason',
-      totalBooks: stats.totalBooks,
-      totalPages: stats.totalPages,
-    }))
-    .sort((a, b) => b.totalPages - a.totalPages); // You could also sort by books
+  const leaderboard: LeaderboardEntry[] = ['Ellie', 'Jason'].map((name) => ({
+    childName: name as 'Ellie' | 'Jason',
+    totalBooks: data[name]?.totalBooks || 0,
+    totalPages: data[name]?.totalPages || 0,
+  }));
 
-  return leaderboard;
+  return leaderboard.sort((a, b) => b.totalPages - a.totalPages);
 }
